@@ -1,4 +1,5 @@
 - Partial
+- 거의 쓰지 않는다 (Pick이나 Omit)
 
 ```typescript
 interface Profile {
@@ -22,4 +23,19 @@ const another: Partial<Profile> = {
 type P<T> = {
     [K in keyof T]?: T[K]
 }
-```∏
+```
+
+
+- Pick
+
+```typescript
+const someone: Pick<Profile, 'name' | 'age'> = {
+    name: 'dj',
+    age: 33
+}
+
+// Pick 직접 만들어보기
+type P<T, S extends keyof T> = {
+    [key in keyof S]: T[key]
+}
+```
