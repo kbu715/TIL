@@ -109,3 +109,70 @@ type Human = Extract<Animal, 'Human'>
 ```
 
 - 타입에도 삼항연산자가 들어갈 수 있다!
+
+
+- Required
+
+```typescript
+interface Profile {
+    name?: string
+    age?: number
+    married?: boolean
+}
+
+const paul: Required<Profile> = {
+    name: 'paul',
+    married: false
+}
+// age is missing!
+```
+
+- Required 타입 분석
+
+```typescript
+type R<T> = {
+    // - : ?(optional)를 빼버려라
+    // modifier
+    [P in keyof T]-?: T[P];
+};
+```
+
+- Readonly
+
+```typescript
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+};
+```
+
+- Record
+
+```typescript
+interface obj {
+    [key: string]: number;
+}
+
+// 위의 타입과 같다.
+const a: Record<string, number> = {a: 3, b: 5, c: 7};
+
+```
+
+- Record 타입 분석
+
+```typescript
+type Record<K extends keyof any, T> = {
+    [key in K]: T;
+};
+```
+
+
+- NonNullable
+
+```typescript
+type A = string | null | undefined | boolean | number;
+
+type B = NonNullable<A>
+// null, undefined가 사라진다.
+```
+
+type NonNullable<T> = T extends null | undefined ? never : T;
