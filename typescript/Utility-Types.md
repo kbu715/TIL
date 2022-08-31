@@ -176,3 +176,72 @@ type B = NonNullable<A>
 ```
 
 type NonNullable<T> = T extends null | undefined ? never : T;
+
+
+- Parameters 
+
+```typescript
+function zip(x: number, y: string, z: boolean): { x: number, y: string, z: boolean } {
+    return { x, y, z }
+}
+
+type Params = Parameters<typeof zip>;
+type First = Params[0] // number type
+```
+
+```typescript
+type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
+
+```
+**infer**: 추론하다 (타입스크립트에게 추론하라고 명령하는 것)
+추론 조건 ? 추론 성공 시의 값 : 추론 실패 시의 값
+
+
+- 파라미터 타입 말고 리턴 타입을 가져와 보자 (그리고 실제로 존재한다 **ReturnType**)
+
+```typescript
+type R<T extends (...args: any) => any> = T extends (...args: any) => infer A ? A : never;
+
+type Ret = R<typeof zip>;
+type Ret = ReturnType<typeof zip>;
+
+```
+infer의 위치만 바꿔주면 된다.
+
+
+- ConstructorParameters
+
+```typescript
+type ConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never;
+
+```
+
+```typescript
+class A {
+    a: string;
+    b: number;
+    c: boolean;
+
+    constructor(a: string, b: number, c: boolean) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+}
+
+const aa = new A('123', 123, true);
+
+type C = ConstructorParameters<typeof A> // [a: string, b: number, c: boolean]
+
+```
+typeof A(class) => 생성자를 의미한다
+
+- InstanceType
+
+```typescript
+type InstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer R ? R : any;
+```
+
+```typescript
+type I = InstanceType<typeof A> // A
+```
