@@ -146,3 +146,67 @@ Accept: text/*, text/plain, text/plain;format=flowed, */*
     3. `text/*`
 
     4. `*/*`
+
+
+# 전송 방식
+
+- Transfer-Encoding
+- Range, Content-Range
+
+## 전송 방식 설명
+
+- 단순 전송
+    - 한번에 요청하고 한번에 쭉 받는것!
+    - Content-Length가 정해져있다.
+```
+HTTP/1.1 200 OK
+Content-Type: text/html;charset=UTF-8
+Content-Length: 3423
+
+<html>
+    <body>
+        ...
+    </body>
+</html>
+```
+- 압축 전송
+```
+HTTP/1.1 200 OK
+Content-Type: text/html;charset=UTF-8
+Content-Encoding: gzip
+Content-Length: 3423
+
+kjh1234hjsfhoaosdfhj3234j2h3jaskdflasdfjh
+```
+- 분할 전송 (Transfer-Encoding)
+    - 쪼개서 보낸다 (Content-Length를 보내면 안된다. 예상이 안된다.)
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Transfer-Encoding: chunked
+
+5 // byte
+Hello
+5
+World
+0 // 끝
+\r\n
+```
+- 범위 전송 (Range, Content-Range)
+
+    - 클라이언트 요청
+    ```
+        GET /event
+        Range: bytes=1001-2000
+    ```
+
+    - 서버 응답
+    ```
+        HTTP/1.1 200 OK
+        Content-Type: text/plain
+        Content-Range: bytes 1001-2000 / 2000
+
+        sakjdfklfj23k4j3k2l4jlkasdfslkad234
+    ```
+
+
