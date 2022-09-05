@@ -37,7 +37,7 @@ message body - RFC7230(최신)
 - 참고: 표현 헤더는 표현 메타데이터와 페이로드 메시지를 구분해야 하지만 그러면 너무 복잡해져서... 생략
 
 
-## 표현
+# 표현
 
 - `Content-Type` : 표현 데이터의 형식
 - `Content-Encoding` : 표현 데이터의 압축 방식
@@ -47,7 +47,7 @@ message body - RFC7230(최신)
 ---
 - 표현 헤더는 전송, 응답 둘다 사용!
 
-### Content-Type 표현 데이터의 형식 설명
+## Content-Type 표현 데이터의 형식 설명
 
 - 미디어 타입, 문자 인코딩
 - 예.
@@ -56,7 +56,7 @@ message body - RFC7230(최신)
     - `image/png`
 
 
-### Content-Encoding 표현 데이터 인코딩
+## Content-Encoding 표현 데이터 인코딩
 
 - 표현 데이터를 압축하기 위해 사용
 - 데이터를 전달하는 곳에서 압축 후 인코딩 헤더 추가 (예를 들면 서버에서 압축 후 클라이언트에서 어떻게 압축된건지 알 수 있다)
@@ -67,7 +67,7 @@ message body - RFC7230(최신)
     - identity (압축 안한다는 것!)
 
 
-### Content-Language 표현 데이터의 자연 언어
+## Content-Language 표현 데이터의 자연 언어
 
 ```
 HTTP/1.1 200 OK
@@ -87,6 +87,62 @@ Content-Length: 521
     - en
     - en-US
 
-### Content-Length 표현 데이터의 길이
+## Content-Length 표현 데이터의 길이
 - 바이트 단위
 - **Transfer-Encoding**(전송 코딩)을 사용하면 Content-Length를 사용하면 안됨
+
+
+# 협상 (콘텐츠 니고시에이션)
+> 클라이언트가 선호하는 표현 요청
+
+- Accept : 클라이언트가 선호하는 미디어 타입 전달
+- Accept-Charset : 클라이언트가 선호하는 문자 인코딩
+- Accept-Encoding : 클라이언트가 선호하는 압축 인코딩
+- Accept-Language : 클라이언트가 선호하는 자연 언어
+
+---
+
+- 협상 헤더는 요청시에만 사용!
+
+![accept-language](../resources/accept-language.png)
+
+- 한국어를 요청했지만 기본이 독일어, 차선이 영어인 경우!
+- 독일어 보낼바에 영어로 줘~
+
+이런 상황...
+
+## 협상과 우선순위 1 Quality Values(q)
+
+```
+GET /event
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+```
+
+- Quality Values(q) 값 사용
+- 0 ~ 1, 클수록 우선순위 높다
+- 생략하면 1
+- `Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7`
+    - 1. ko-KR;q=1(생략)
+    - 2. ko;q=0.9
+    - 3. en-US;q=0.8
+    - 4. en;q=0.7
+
+
+## 협상과 우선순위 2
+
+- 구체적인 것이 우선한다.
+
+```
+GET /event
+Accept: text/*, text/plain, text/plain;format=flowed, */*
+```
+
+- Accept: text/*, text/plain, text/plain;format=flowed, */*
+
+    1. `text/plain;format=flowed`
+
+    2. `text/plain`
+
+    3. `text/*`
+
+    4. `*/*`
