@@ -215,3 +215,72 @@ function add (a, b) {
 add.apply(null, [3, 5]) // 8
 add.call(null, 3, 5) // 8
 ```
+
+
+## 2.1 프로미스의 최고 장점을 아십니까
+
+- 실행되었는데 결과값을 **나중에 쓸 수 있다!**
+
+- 콜백은 비동기일수도 아닐수도 (비동기 콜백이 비동기)
+
+
+- **callback hell 이 왜 안좋아요? 에 대한 대답!**
+
+결과값을 바로 받아야 하기 때문에!
+
+
+**예시**
+```javascript
+axios.get('url1', function (data1) {
+    axios.get('url2', function (data2) {
+        axios.get('url3', function (data3) {
+            // ...
+        })
+    })
+})
+```
+
+나중에 써도 된다!
+```javascript
+const p1 = axios.get('url1');
+const p2 = axios.get('url2');
+const p3 = axios.get('url3');
+const p4 = axios.get('url4');
+const p5 = axios.get('url5');
+const p6 = axios.get('url6');
+
+
+
+Promise.all([p1, p2, p3, p4, p5, p6]).then((results) => {}).catch((error) => {});
+
+```
+- 하나라도 문제가 되면 catch 절로 가버린다
+- 전부 다 취소했다가 다시 시도해야 한다
+
+
+
+✍🏻 **NOTE**
+> 입력 값으로 들어온 프로미스 중 하나라도 거부 당하면 Promise.all()은 즉시 거부합니다. 
+이에 비해, Promise.allSettled()가 반환하는 프로미스는 이행/거부 여부에 관계없이 주어진 프로미스가 모두 완료될 때까지 기다립니다. 
+결과적으로, 주어진 이터러블의 모든 프로미스와 함수의 결과 값을 최종적으로 반환합니다.
+
+
+
+```javascript
+
+// 송금이라 치면
+
+const p1 = axios.get('url1'); // 송금 성공
+const p2 = axios.get('url2'); // 송금 성공
+const p3 = axios.get('url3'); // 송금 성공
+const p4 = axios.get('url4'); // 송금 성공
+const p5 = axios.get('url5'); // 송금 실패
+const p6 = axios.get('url6'); // 송금 성공
+
+Promise.allSettled([p1, p2, p3, p4, p5, p6]).then((results) => {
+    // 실패한 것만 필터링해서 다시 시도하면 되게끔 할 수 있다
+}).catch((error) => {});
+
+```
+
+- 그래서 내 사전에 `Promise.all` 은 없다!
