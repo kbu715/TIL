@@ -360,3 +360,240 @@ setTimeout(() => {
 
 console.log(a) // 2 여기서 a = 5 인 경우를 생각할 수 없다!!!
 ```
+
+
+## 2.4 Promise에도 동기 부분이 있다!
+
+```javascript
+let a = 2;
+
+const p = new Promise((resolve, reject) => {
+
+    // 여기 동기다. 제일 먼저 실행
+    console.log('여기 동기 제일 먼저') 
+
+    setTimeout(() => {
+        a = 5;
+        console.log(a);
+        resolve(a);
+    }, 0);
+})
+console.log('딴짓 딴짓')
+console.log(a);
+
+
+p.then((result) => console.log("result: " + result));
+
+/*
+<output>
+
+여기 동기 제일 먼저
+
+딴짓 딴짓 ​​​​​
+
+2 ​​​​​
+
+5 ​​​​​
+
+result: 5 
+
+*/
+
+
+// Promise란, 실행은 바로 하되, 결괏값을 나중에 원할 때 쓸 수 있는 것!
+```
+
+- new Promise 안의 익명함수, 함수 호출문이 아니지만 먼저 호출된다.
+- 이런 걸 외워야 한다.
+
+```javascript
+(resolve, reject) => {
+
+    // 여기 동기다. 제일 먼저 실행
+    console.log('여기 동기 제일 먼저') 
+
+    setTimeout(() => {
+        a = 5;
+        console.log(a);
+        resolve(a);
+    }, 0);
+}
+```
+
+- 백그라운드는 특정 조건이 만족했을 때 매크로 큐나 마이크로 큐로 보낸다.
+- `setTimeout`의 특정 조건은 시간이 지났을 때
+- `Promise`의 조건은 `resolve` 함수가 호출되었을 때
+
+
+## 2.5 async/await, Promise로 바꾸기
+
+```javascript
+p.then((result) => {
+    console.log("result: " + result);
+    return Promise.resolve(1);
+}).then(result => {
+    console.log(result);
+    return undefined;
+}).then(result => {
+    console.log(result);
+    return 1;
+}).then(result => {
+    console.log(result);
+}).catch(() => {
+
+}).then(() => {
+    
+})
+```
+
+- `Promise`가 resolve된 값이 result로 넘어간다.
+- `Promise`가 아닌 일반 값은 그냥 result로 넘어간다.
+
+
+```javascript
+async function aaa() {
+    const a = await Promise.resolve(1);
+    const b = await 1;
+    console.log(a); // 1
+    console.log(b); // 1
+}
+
+aaa();
+```
+
+- `await`이 기준
+
+- `Promise.resolve(1)` <- 프로미스화 
+
+
+```javascript
+async function a() {
+    const a = await 1;
+    console.log('a', a);
+    console.log('hmmmm');
+
+    await null;
+    const b = await Promise.resolve(1);
+    console.log('b', b);
+}
+
+a();
+
+/*
+a 1
+
+hmmmm
+
+b 1
+*/
+
+
+
+Promise.resolve(1)
+    .then((a) => {
+        console.log('a', a);
+        console.log('hmmmm');
+        return null;
+    })
+    .then(() => {
+        return Promise.resolve(1);
+    })
+    .then((b) => {
+        console.log('b', b);
+    })
+```
+
+
+## 2.6 무지성 await 연달아쓰기 금지!
+
+
+```javascript
+function delayP(ms) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, ms);
+    })
+}
+
+async function a() {
+    console.log(3000);
+    await delayP(3000);
+    console.log(6000);
+    await delayP(6000);
+    console.log(9000);
+    await delayP(9000);
+
+    // 토탈 18초
+}
+
+a();
+
+async function b() {
+    const p1 = delayP(3000); // 3sec
+    const p2 = delayP(6000); // 6sec
+
+    await Promise.allSettled([p1, p2]); // 6sec
+    await delayP(9000); // 9sec
+
+    // total 15sec
+    // 무지성 await 쓰기 금지!
+    // 동시에 진행시켜도 되는것들을 무지성 await을 때문에 응답시간을 지연시키지 말자.
+}
+
+b();
+
+// Promise: 실행은 바로. 결괏값은 나중에 원할 때 쓸 수 있는 것!
+```
+
+- Promise란, 실행은 바로 하되, 결괏값을 나중에 원할 때 쓸 수 있는 것
+
+- 실행은 바로 ---> 결괏값이 나올 때는 나중 ---> 결괏값을 사용할 때는 더 나중
+
+- 실행은 바로 ---> 결괏값도 거의 바로 쓰고 싶은데 ---> 그 다음에 결괏값이 나오면 ---> then, await, Promise.all 이런게 결괏값을 기다린 후에 실행된다!
+
+
+## 2.7 프로미스 다양한 활용
+
+- async Promise.then으로 바꾸기
+```javascript
+async function b() {
+    const p1 = delayP(3000); // 3sec
+    const p2 = delayP(6000); // 6sec
+
+    await Promise.all([p1, p2]); // 6sec
+    await delayP(9000); // 9sec
+
+    // total 15sec
+}
+
+// async -> Promise.then 으로 바꾸기
+
+
+new Promise((resolve, reject) => {
+    const p1 = delayP(3000);
+    const p2 = delayP(6000);
+    return Promise.all([p1, p2]);
+})
+.then(() => {
+    return delayP(9000);
+})
+.then(() => {
+    
+})
+```
+
+
+- 동시에 조작? 순서대로 조작?
+
+```javascript
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(1);
+const p3 = Promise.resolve(1);
+
+// 동시에 하고싶다면 이렇게
+const results = await Promise.all([p1, p2, p3]);
+
+
+for (let result of results) {
+    await result조작(); // p1 끝난 후 p2, p2 끝난 후 p3
+}
+```
